@@ -1,0 +1,2 @@
+# .doom.d
+Doom Config
