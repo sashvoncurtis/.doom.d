@@ -1,2 +1,5 @@
 # .doom.d
-Doom Config
+My Minimal Doom Config
+
+- includes support for flychecking .js with eslint
+- includes themes
