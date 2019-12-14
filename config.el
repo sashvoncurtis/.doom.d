@@ -1,18 +1,43 @@
+;;; run M-x lsp to start the dart language server, provides dart and flutter(via flutter.el) support
+
+
 ;;; ~/.doom.d/config.el -*- lexical-binding: t; -*-
 
 ;; Place your private configuration here
 
 (require 'company)
 (require 'company-tern)
+(require 'doom-modeline)
+(doom-modeline-mode 1)
 
-;; Theme
+
+;; Doom Modeline -----------------------------------------------------
+;; How tall the mode-line should be (only respected in GUI Emacs).
+(setq doom-modeline-height 25)
+
+;; How wide the mode-line bar should be (only respected in GUI Emacs).
+(setq doom-modeline-bar-width 3)
+;; Whether show `all-the-icons' or not (if nil nothing will be showed).
+(setq doom-modeline-icon t)
+
+;; Whether show the icon for major mode. It respects `doom-modeline-icon'.
+(setq doom-modeline-major-mode-icon t)
+
+;; Display color icons for `major-mode'. It respects `all-the-icons-color-icons'.
+(setq doom-modeline-major-mode-color-icon nil)
+
+;; Whether display minor modes or not. Non-nil to display in mode-line.
+(setq doom-modeline-minor-modes nil)
+
+
+;; Theme --------------------------------------------------------------
 (require 'doom-themes)
 
 ;; Global settings (defaults)
 (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
       doom-themes-enable-italic t) ; if nil, italics is universally disabled
 
-;; Load the theme (doom-one, doom-one-light, doom-molokai, doom-dracula, etc); keep in mind that each theme
+;; Load the theme (doom-nord-light, doom-one, doom-one-light, doom-molokai, doom-dracula, doom-wilmersdorf, doom-nova etc); keep in mind that each theme
 ;; may have their own settings.
 (load-theme 'doom-dracula t)
 
@@ -28,10 +53,62 @@
 ;; Corrects (and improves) org-mode's native fontification.
 (doom-themes-org-config)
 
+;; Dart Server --------------------------------------------------------------
+;; (setq dart-server-sdk-path "/Users/sashnortier/Desktop/Code/flutter/bin/cache/dart-sdk/")
+;; (setq dart-server-enable-analysis-server t)
+;; (add-hook 'dart-server-hook 'flycheck-mode)
 
-;; Flychecker ESLINT 
+;; Dart Mode --------------------------------------------------------------
+(use-package lsp-mode
+  :hook (dart-mode . lsp)
+  :commands lsp)
+
+(add-hook 'dart-mode-hook 'lsp)
+(with-eval-after-load "projectile"
+  (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
+  (add-to-list 'projectile-project-root-files-bottom-up "BUILD"))
+
+(setq lsp-auto-guess-root t)
+
+;; Flutter ----------------------------------------------------------
+;; Assuming usage with dart-mode
+(use-package dart-mode
+  :ensure-system-package (dart_language_server . "pub global activate dart_language_server")
+  :custom
+  (dart-format-on-save t)
+  (dart-sdk-path "/Users/sashnortier/Desktop/Code/flutter/bin/cache/dart-sdk/"))
+
+(use-package flutter
+  :after dart-mode
+  :bind (:map dart-mode-map
+              ("C-M-x" . #'flutter-run-or-hot-reload))
+  :custom
+  (flutter-sdk-path "/Users/sashnortier/Desktop/Code/flutter/"))
+
+;; Optional
+;; (use-package flutter-l10n-flycheck
+;;   :after flutter
+;;   :config
+;;   (flutter-l10n-flycheck-setup))
+
+
+
+;; Nyan Mode ----------------------------------------------------------
+;; RJSX Mode For .js
+(add-to-list 'auto-mode-alist '("components\\/.*\\.js\\'" . rjsx-mode))
+;; JS Auto Complete ---------------------------------------------------
+(add-hook 'js2-mode-hook 'ac-js2-mode)
+(setq ac-js2-evaluate-calls t)
+;; Flychecker ESLINT ---------------------------------------------------
 ;; use web-mode for .jsx files
-(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode)) ;; auto-enable for .js/.jsx files
+(setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+(defun web-mode-init-hook ()
+  "Hooks for Web mode.  Adjust indent."
+  (setq web-mode-markup-indent-offset 4))
+
+(add-hook 'web-mode-hook  'web-mode-init-hook)
+;; (add-hook 'web-mode-hook  'emmet-mode)
 
 ;; http://www.flycheck.org/manual/latest/index.html
 (require 'flycheck)
@@ -68,10 +145,12 @@
 (add-hook 'js2-mode-hook (lambda ()
                            (tern-mode)
                            (company-mode)))
-                           
 ;; Disable completion keybindings, as we use xref-js2 instead
 (define-key tern-mode-keymap (kbd "M-.") nil)
 
+
+;; Disable Trailing Whitespace --------------------------------------------
+(setq show-trailing-whitespace nil)
 
 (add-to-list 'default-frame-alist
              '(ns-transparent-titlebar . t))
@@ -93,8 +172,8 @@
 (add-hook! 'org-capture-mode-hook (company-mode -1))
 
 (setq
- doom-font (font-spec :family "Source Code Pro" :size 15)
- doom-variable-pitch-font (font-spec :family "Source Code Pro" :size 14)
+ doom-font (font-spec :family "Menlo" :size 14)
+ doom-variable-pitch-font (font-spec :family "Menlo" :size 14)
  dart-format-on-save t
  web-mode-markup-indent-offset 2
  web-mode-code-indent-offset 2
