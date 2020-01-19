@@ -1,12 +1,3 @@
-;; -*- no-byte-compile: t; -*-
-;;; ~/.doom.d/packages.el
-
-;;; Examples:
-;; (package! some-package)
-;; (package! another-package :recipe (:fetcher github :repo "username/repo"))
-;; (package! builtin-package :disable t)
-
-
 (package! ob-typescript)
 (package! js2-mode)
 (package! js-import)
@@ -21,7 +12,6 @@
 (package! move-text)
 (package! origami)
 (package! org-super-agenda)
-(package! dart-mode)
 (package! ob-dart)
 (package! org-brain)
 (package! ascii-art-to-unicode)
@@ -38,3 +28,7 @@
 (package! dart-server)
 (package! eglot)
 (package! lsp-mode)
+(package! pandoc-mode)
+(package! package-initialize)
+(package! elpy-enable)
+(package! jedi)
