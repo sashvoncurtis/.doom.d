@@ -8,8 +8,8 @@
 (require 'company)
 (require 'company-tern)
 (require 'doom-modeline)
-(doom-modeline-mode 1)
 
+(doom-modeline-mode 1)
 
 ;; Doom Modeline -----------------------------------------------------
 ;; How tall the mode-line should be (only respected in GUI Emacs).
@@ -30,6 +30,90 @@
 (setq doom-modeline-minor-modes nil)
 
 
+;; LATEX
+(setq-default TeX-master t) ; Query for master file.
+(latex-preview-pane-enable)
+(setenv "PATH" (concat "/Library/TeX/texbin" (getenv "PATH")))
+(setq exec-path (append '("/Library/TeX/texbin") exec-path))
+(setq latex-run-command "pdflatex")
+
+(add-hook 'LaTeX-mode-hook 'latex-preview-pane-mode)
+
+;; (after! latex
+;;   (defun azy2/compile-pdf ()
+;;     (setq-local compilation-scroll-output t)
+;;     (compile (concat "pdflatex " (file-name-nondirectory buffer-file-name))))
+;;   (add-hook 'LaTeX-mode-hook
+;;     '(lambda () (add-hook 'after-save-hook 'azy2/compile-pdf nil 'local))))
+
+
+;; (add-hook 'doc-view-mode-hook #'auto-revert-mode)
+
+
+;; Modify on save pdf
+(defun reload-pdf ()
+  (interactive
+  (let* ((fname buffer-file-name)
+        (fname-no-ext (substring fname 0 -4))
+        (pdf-file (concat fname-no-ext ".pdf"))
+        (cmd (format "pdflatex %s" fname)))
+    (delete-other-windows)
+    (split-window-horizontally)
+    (split-window-vertically)
+    (shell-command cmd)
+    (other-window 2)
+    (find-file pdf-file)
+    (balance-windows))))
+
+(global-set-key "\C-x\p" 'reload-pdf)
+
+;; AUCTEX 
+(setq TeX-auto-save t)
+(setq TeX-parse-self t)
+(setq TeX-PDF-mode t)
+(setq-default TeX-master nil)
+(add-to-list 'exec-path "/Library/TeX/texbin")
+
+;; ;; PDF TOOLS - LATEX PREVIEW
+;; (use-package pdf-tools
+;;   :ensure t
+;;   :pin manual ;; don't reinstall when package updates
+;;   :mode  ("\\.pdf\\'" . pdf-view-mode)
+;;   :config
+;;   (setq-default pdf-view-display-size 'fit-page)
+;;   (setq pdf-annot-activate-created-annotations t)
+;;   (pdf-tools-install :no-query)
+;;   (require 'pdf-occur))
+
+
+;; Python  - Anaconda
+(add-hook 'python-mode-hook 'anaconda-mode)
+
+;; Python Jedi Language Server
+(add-hook 'python-mode-hook 'jedi:setup)
+(setq jedi:complete-on-dot t)                 ; optional
+
+;;; jedi completion
+;;; see https://github.com/tkf/emacs-jedi
+
+;; jedi dependency: deferred
+(add-to-list 'load-path (expand-file-name
+                         "~/.emacs.d/el-get/deferred"))
+;; jedi dependency: deferred
+(add-to-list 'load-path (expand-file-name
+                         "~/.emacs.d/el-get/ctable"))
+;; jedi dependency: epc
+(add-to-list 'load-path (expand-file-name
+                         "~/.emacs.d/el-get/epc"))
+(add-to-list 'load-path (expand-file-name
+                         "~/.emacs.d/el-get/jedi"))
+(require 'jedi)
+(setq jedi:server-args
+      '("--sys-path" "/usr/lib/python3.7/"
+        "--sys-path" "/usr/lib/python3.7/site-packages"))
+
+(setq jedi:setup-keys t)
+
 ;; Theme --------------------------------------------------------------
 (require 'doom-themes)
 
@@ -39,7 +123,7 @@
 
 ;; Load the theme (doom-nord-light, doom-one, doom-one-light, doom-molokai, doom-dracula, doom-wilmersdorf, doom-nova etc); keep in mind that each theme
 ;; may have their own settings.
-(load-theme 'doom-dracula t)
+(load-theme 'doom-one t)
 
 ;; Enable flashing mode-line on errors
 (doom-themes-visual-bell-config)
@@ -74,6 +158,8 @@
 ;; Assuming usage with dart-mode
 (use-package dart-mode
   :ensure-system-package (dart_language_server . "pub global activate dart_language_server")
+  :hook (dart-mode . (lambda ()
+                      (add-hook 'after-save-hook #'flutter-run-or-hot-reload nil t)))
   :custom
   (dart-format-on-save t)
   (dart-sdk-path "/Users/sashnortier/Desktop/Code/flutter/bin/cache/dart-sdk/"))
@@ -92,6 +178,8 @@
 ;;   (flutter-l10n-flycheck-setup))
 
 
+;; Pandoc Mode --------------------------------------------------------
+(add-hook 'markdown-mode-hook 'pandoc-mode)
 
 ;; Nyan Mode ----------------------------------------------------------
 ;; RJSX Mode For .js
